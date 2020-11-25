@@ -60,6 +60,8 @@ def visualize_bodyhandface2d(im, dict_poses2d, dict_scores=None, lw=2, max_paddi
     bones = {}
     bonecolors = {}
     for k,v in dict_poses2d.items():
+        if v.shape[1] == 0:
+            continue
         bones[k], bonecolors[k], _ = _get_bones_and_colors(v.shape[1])
     
     # pad if necessary (if some joints are outside image boundaries)
