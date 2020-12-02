@@ -49,7 +49,7 @@ def setup(modelname, postprocessing="ppi"):
     model.load_state_dict(ckpt['state_dict'])
     model = model.to(device)
 
-def runModel(image, parts = ["body", "hands", "face"], postprocessing="ppi"):
+def runModel(image, parts = ["body", "hand", "face"], postprocessing="ppi"):
     imlist = [ToTensor()(image).to(device)]
     if ckpt['half']: imlist = [im.half() for im in imlist]
     resolution = imlist[0].size()[-2:]
@@ -75,13 +75,7 @@ def runModel(image, parts = ["body", "hands", "face"], postprocessing="ppi"):
                 for i in range(len(detections[part])): 
                     detections[part][i]['hand_isright'] = bestcls<ckpt['hand_ppi_kwargs']['K']
 
-    # assignment of hands and head to body
-    if "hands" in parts and "head" in parts:
-        detections, body_with_wrists, body_with_head = postprocess.assign_hands_and_head_to_body(detections)
-    elif not "hands" in parts:
-        det_poses2d = {part: np.stack([d['pose2d'] for d in part_detections], axis=0) if len(part_detections)>0 else np.empty( (0,0,2), dtype=np.float32) for part, part_detections in detections.items()}
-        body_with_head = postprocess.assign_head_to_body(det_poses2d["body"], det_poses2d["face"])
-
+    # assignment of hands and head to body    
     det_poses2d = {part: np.stack([d['pose2d'] for d in part_detections], axis=0) if len(part_detections)>0 else np.empty( (0,num_joints[part],2), dtype=np.float32) for part, part_detections in detections.items()}
     scores = {part: [d['score'] for d in part_detections] for part,part_detections in detections.items()}
     imout = visu.visualize_bodyhandface2d(np.asarray(image)[:,:,::-1],
