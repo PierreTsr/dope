@@ -14,14 +14,16 @@ def scale_orthographic(points3d, points2d):
     """
     Return a scaled set of 3D points, offseted in XY direction so as to minimize the distance to the 2D points
     """
-    residuals_func1 = lambda x : ((x[None,:2] + points3d[:,:2]) - points2d).flatten()
-    res1 = scipy.optimize.least_squares(residuals_func1, x0=[0,0], method='lm')
-    residuals_func2 = lambda x : (np.exp(x[2]) * (x[None,:2] + points3d[:,:2]) - points2d).flatten()
-    res2 = scipy.optimize.least_squares(residuals_func2, x0=np.concatenate((res1['x'],[0])), method='lm')
-    x=res2['x']
-    output3d = points3d.copy()
-    output3d[:,:2]+=x[None,:2]
-    output3d*=np.exp(x[2])
+    barycenter3d = np.mean(points3d, axis=0)
+    barycenter2d = np.mean(points2d, axis=0)
+    translation = barycenter2d - barycenter3d[:2]
+    residuals_func2 = lambda s : (s * (points3d[:,:2] - barycenter3d[:2]) - points2d + translation).flatten()
+    res2 = scipy.optimize.least_squares(residuals_func2, x0=0, method='lm')
+    scale = res2['x']
+    print(translation, scale)
+    output3d = points3d.copy() - barycenter3d
+    output3d*=scale
+    output3d[:,:2]+=translation
     return output3d
             
 
