@@ -57,7 +57,8 @@ if __name__=="__main__":
                 if args.save:
                     output.write(img3d)
             else:
-                image = dope_custom.runModel(frame, parts=["body"])
+                image, poses3d = dope_custom.runModel(frame, parts=["body"])
+                #print(poses3d)
                 image = image[:,:,::-1]
                 cv2.imshow("DOPE", image)
                 if args.save:
