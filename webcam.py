@@ -58,6 +58,8 @@ if __name__=="__main__":
         if ret:
             start = time.time()
             image, poses3d = dope_custom.runModel(frame, parts=["body"])
+            #if len(poses3d["body"]) > 0:
+                #print(geometry .getQuaternionRotations(poses3d["body"][0,:,:]))
             #print(poses3d)
             image = image[:,:,::-1]
             cv2.imshow("DOPE", image)
