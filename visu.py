@@ -98,9 +98,10 @@ def visualize_bodyhandface2d(im, dict_poses2d, dict_scores=None, lw=2, max_paddi
             for j in range(pose2d.shape[0]):
                 p = _get_xy_tupleint(pose2d, j)
                 cv2.circle(imout, p, (2 if part!='face' else 1)*lw, (0,0,255), thickness=-1)
+                cv2.putText(imout, str(j), (int(pose2d[j,0] + 10), int(pose2d[j,1] + 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0))
           
             # draw scores
-            if dict_scores is not None: cv2.putText(imout, '{:.2f}'.format(dict_scores[part][ipose]), (int(pose2d[12,0]-10),int(pose2d[12,1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0) )
+            #if dict_scores is not None: cv2.putText(imout, '{:.2f}'.format(dict_scores[part][ipose]), (int(pose2d[12,0]-10),int(pose2d[12,1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0) )
       
     if not bgr: imout = imout[:,:,::-1]
     
