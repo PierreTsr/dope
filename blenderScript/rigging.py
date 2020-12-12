@@ -1,3 +1,9 @@
+import sys
+
+#insert path to your dope repository
+sys.path.append("D:/Pierre/Documents/Polytechnique/Informatique/INF573/dope")
+import webcam
+import geometry
 import bpy
 import time
 import numpy
