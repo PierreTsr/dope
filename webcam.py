@@ -18,7 +18,7 @@ def setupCapture():
 
 def capturePose(videoCapture):
     assert(videoCapture.isOpened())
-    ret, frame = vc.read()
+    ret, frame = videoCapture.read()
     if ret:
         start = time.time()
         image, poses3d = dope_custom.runModel(frame, parts=["body"])
