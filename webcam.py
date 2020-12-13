@@ -34,12 +34,19 @@ def closeCapture(videoCapture):
     cv2.destroyWindow("DOPE")
 
 if __name__=="__main__":
-
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.mplot3d import art3d
+    import geometrySimple
+    
     dope_custom.setup("DOPErealtime_v1_0_0")
     vc = cv2.VideoCapture(0)
 
     if args.dim3:
-        viewer3d = visu3d.Viewer3d()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        plt.ion()
+        plt.show()
     else:
         cv2.namedWindow("DOPE")
 
@@ -60,9 +67,19 @@ if __name__=="__main__":
             image, poses3d = dope_custom.runModel(frame, parts=["body"])
             #if len(poses3d["body"]) > 0:
                 #print(geometry .getQuaternionRotations(poses3d["body"][0,:,:]))
-            #print(poses3d)
+            print(poses3d)
             image = image[:,:,::-1]
             cv2.imshow("DOPE", image)
+            if args.dim3 and len(poses3d["body"]) > 0:
+                ax.clear()
+                body = geometrySimple.getCompletePositions(poses3d["body"][0]) + np.array([0.5,0.5,0.6])
+                legs = art3d.Line3DCollection([[body[0,:], body[2,:]],[body[2,:], body[4,:]],[body[4,:],body[5,:]], [body[5,:],body[3,:]],[body[3,:], body[1,:]]])
+                arms = art3d.Line3DCollection([[body[13,:], body[14,:]],[body[6,:], body[8,:]],[body[8,:], body[10,:]],[body[10,:],body[11,:]], [body[11,:],body[9,:]],[body[9,:], body[7,:]]])
+                ax.add_collection(legs)
+                ax.add_collection(arms)
+                ax.autoscale_view()
+                plt.draw()
+                plt.pause(0.001)
             if args.save:
                 image = image[:height,:width,:]
                 output.write(image)

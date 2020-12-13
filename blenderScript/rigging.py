@@ -4,7 +4,7 @@ import sys
 sys.path.append("D:/Pierre/Documents/Polytechnique/Informatique/INF573/dope")
 import webcam
 import dope_custom
-import geometry
+import geometrySimple
 import bpy
 import time
 import numpy
@@ -25,7 +25,7 @@ class Rigging(bpy.types.Operator):
             self.initCam()
             poses3d = webcam.capturePose(self._cap)
             if len(poses3d["body"]) > 0:
-                rotations = geometry.getQuaternionRotations(poses3d["body"][0,:,:])   
+                rotations = geometrySimple.getQuaternionRotations(poses3d["body"][0,:,:])   
                 bones = bpy.data.objects["Armature"].pose.bones
                 for bone in rotations :
                     bones[bone].rotation_mode = "QUATERNION";

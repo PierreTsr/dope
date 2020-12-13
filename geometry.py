@@ -27,6 +27,7 @@ def getQuaternionRotations(positions):
     ribcage = (positions[10, :] + positions[11, :])/2
     pelvis = (positions[4, :] + positions[5, :])/2
     completePositions = np.vstack((positions, np.expand_dims(pelvis,0), np.expand_dims(ribcage, 0)))
+    completePositions = np.hstack((np.expand_dims(completePositions[:,0],1), np.expand_dims(completePositions[:,2],1), np.expand_dims(completePositions[:,1], 1)))
 
     print(completePositions)
     rotations = dict({})
@@ -49,32 +50,44 @@ def shoulderRotation(ribcage, shoulder, elbow, wrist, right=True):
     """
     if right :
         initialY = np.expand_dims(normalize(shoulder - ribcage), 1)
-        initialX = np.expand_dims(np.array([0, 0, -1]),1)
+        initialX = np.expand_dims(np.array([0, 1, 0]),1)
         initialZ = np.expand_dims(normalize(np.cross(initialX.ravel(), initialY.ravel())), 1)
 
         finalY = np.expand_dims(normalize(elbow - shoulder), 1)
-        finalX = - np.expand_dims(normalize(np.cross(wrist - shoulder, elbow - shoulder)), 1)
-        finalZ = np.expand_dims(normalize(np.cross(finalX.ravel(), finalY.ravel())), 1)
+        finalZ = - np.expand_dims(normalize(np.cross(wrist - shoulder, elbow - shoulder)), 1)
+        finalX = np.expand_dims(normalize(np.cross(finalY.ravel(), finalZ.ravel())), 1)
 
     else:
         initialY = np.expand_dims(normalize(shoulder - ribcage), 1)
-        initialZ = np.expand_dims(np.array([0, 0, 1]),1)
-        initialX = np.expand_dims(normalize(np.cross(initialY.ravel(), initialZ.ravel())), 1)
+        initialX = np.expand_dims(np.array([0, 1, 0]),1)
+        initialZ = np.expand_dims(normalize(np.cross(initialX.ravel(), initialY.ravel())), 1)
 
         finalY = np.expand_dims(normalize(elbow - shoulder), 1)
-        finalZ = np.expand_dims(normalize(np.cross(wrist - shoulder, elbow - shoulder)), 1)
-        finalX = np.expand_dims(normalize(np.cross(finalY.ravel(), final.ravel())), 1)
+        finalX = np.expand_dims(normalize(np.cross(wrist - shoulder, elbow - shoulder)), 1)
+        finalZ = np.expand_dims(normalize(np.cross(finalX.ravel(), finalY.ravel())), 1)
     
+    initialBase = np.array(
+        [[0, 1, 0],
+        [1, 0, 0],
+        [0, 0, -1]])
     initialBase = np.hstack((initialX, initialY, initialZ))
-    
+
+    finalBase = np.array(
+        [[0, 0, -1],
+        [1, 0, 0],
+        [0, -1, 0]])
+
     finalBase = np.hstack((finalX, finalY, finalZ))
     print(initialBase,"\n", finalBase)
-    rotation = finalBase.dot(initialBase.T)
+    rotation = (finalBase.T).dot(initialBase)
+    rotation = rotation.T
+    #rotation = initialBase
     print(rotation)
     print(np.linalg.det(rotation))
     quat = bmath.Matrix(rotation).to_quaternion()
+    print(bmath.Matrix(rotation).to_euler())
     print(quat)
-    return rotation
+    return bmath.Matrix(rotation).to_euler()
 
 def ankleRotation(pelvis, ankle, knee, foot, right=False):
     """
@@ -95,7 +108,7 @@ def ankleRotation(pelvis, ankle, knee, foot, right=False):
 
     rotation = finalBase.dot(initialBase.T)
     quat = bmath.Matrix(rotation).to_quaternion()
-    return quat
+    return bmath.Matrix(rotation).to_euler()
 
 def kneeRotation(ankle, knee, foot):
     """
@@ -108,40 +121,53 @@ def kneeRotation(ankle, knee, foot):
     angle = math.acos(initialX.dot(finalX))
     quat = bmath.Quaternion(axis, angle)
 
-    return quat
+    return quat.to_euler()
 
-def elbowRotation(shoulder, elbow, wrist):
+def elbowRotation(shoulder, elbow, wrist, right = True):
     """
     compute the quaternion rotation of the elbow based on three keypoints.
     """
+    if right:
+        parentY = np.expand_dims(normalize(elbow - shoulder), 1)
+        parentZ = - np.expand_dims(normalize(np.cross(wrist - shoulder, elbow - shoulder)), 1)
+        parentX = np.expand_dims(normalize(np.cross(parentY.ravel(), parentZ.ravel())), 1)
+        parentBase = np.hstack((parentX, parentY, parentZ))
+        print(parentBase)
 
-    initialX = normalize(elbow - shoulder)
-    finalX = normalize(wrist - elbow)
-    axis = np.cross(initialX, finalX)
-    angle = math.acos(initialX.dot(finalX))
-    quat = bmath.Quaternion(axis, angle)
 
-    return quat
+    initialY = normalize(elbow - shoulder).dot(parentBase)
+    finalY = normalize(wrist - elbow).dot(parentBase)
+    axis = normalize(np.cross(initialY, finalY))
+    print(initialY)
+    print(finalY)
+    print(axis)
+    angle = math.acos(initialY.dot(finalY))
+    print(angle)
+    rot = bmath.Quaternion(axis, angle).to_euler()
+    print(rot)
+    return rot
 
-completePositions = np.array(
-    [[ 1.05972715e-01, -1.91484168e-01, -9.87268388e-01],
-    [-1.22449167e-01, -2.20937118e-01, -9.77727592e-01],
-    [ 1.14813454e-01, -2.44370565e-01, -5.69621325e-01],
-    [-1.09872602e-01, -2.70632267e-01, -5.58402002e-01],
-    [ 9.01385844e-02, -2.47281659e-02, -2.34129876e-01],
-    [-9.13349167e-02, -2.88566854e-02, -2.34967083e-01],
-    [ 3.71678740e-01, -1.35432780e-01, -4.79045883e-02],
-    [-2.35885561e-01, -2.05345720e-01, -4.08929251e-02],
-    [ 3.08316708e-01, -5.69299376e-03,  5.63857565e-03],
-    [-2.73237437e-01, -4.46720421e-02,  2.24210482e-04],
-    [ 1.91548601e-01,  9.01740044e-03,  2.30540872e-01],
-    [-1.88258335e-01, -5.49487676e-03,  2.33912423e-01],
-    [-4.47874918e-04, -2.46447362e-02,  4.44248855e-01],
-    [-5.98166138e-04, -2.67924257e-02, -2.34548479e-01],
-    [ 1.64513290e-03,  1.76126184e-03,  2.32226640e-01]])
+positions = np. array(
+    [[ 0.10183189, -0.99292105,  0.33507288],
+    [-0.13642786, -0.9890006 ,  0.32888356],
+    [ 0.09715796, -0.6364533 ,  0.10153572],
+    [-0.12420492, -0.63063073,  0.10392337],
+    [ 0.08191029, -0.2443048 ,  0.04699538],
+    [-0.10647766, -0.23837054,  0.04459823],
+    [ 0.33463606, -0.20243369, -0.03211017],
+    [-0.32894036, -0.17874508,  0.06295507],
+    [ 0.28297815, -0.01894949,  0.01688627],
+    [-0.24777538,  0.00328757,  0.0892858 ],
+    [ 0.1802957 ,  0.21587019, -0.02095461],
+    [-0.15435581,  0.23491085,  0.00785058],
+    [ 0.0152513 ,  0.42819002, -0.05184324]])
+ribcage = (positions[10, :] + positions[11, :])/2
+pelvis = (positions[4, :] + positions[5, :])/2
+completePositions = np.vstack((positions, np.expand_dims(pelvis,0), np.expand_dims(ribcage, 0)))
+completePositions = np.hstack((np.expand_dims(completePositions[:,0],1), np.expand_dims(completePositions[:,2],1), np.expand_dims(completePositions[:,1], 1)))
 
 q = shoulderRotation(completePositions[14,:], completePositions[10,:], completePositions[8,:], completePositions[6,:], True)
-blenderBase = np.array([[0.03 , 0.999, .008],
-    [-0.035, 0.001, -0.99],
-    [-0.99, 0.038, 0.019]])
-print(rotation.dot(blenderBase))
+
+shoulderRotation(completePositions[14,:], completePositions[11,:], completePositions[9,:], completePositions[7,:], False)
+
+elbowRotation(completePositions[10,:], completePositions[8,:], completePositions[6,:], True)
