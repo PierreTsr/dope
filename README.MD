@@ -65,7 +65,26 @@ To use only the capture part without Blender, install the following packages in 
 4. OpenCV
 5. matplotlib
 
-Then run
+#### Download the models
+
+Then in the repository create a folder `models/` in which you should place the downloaded pretrained models.
+The list of models include:
+* [DOPE_v1_0_0](http://download.europe.naverlabs.com/ComputerVision/DOPE_models/DOPE_v1_0_0.pth.tgz) as used the original ECCV'20 paper
+* [DOPErealtime_v1_0_0](http://download.europe.naverlabs.com/ComputerVision/DOPE_models/DOPErealtime_v1_0_0.pth.tgz) which is its real-time version
+
+#### post-processing with a modified version of LCR-Net++
+
+Our post-processing relies on a modified version of the pose proposals integration proposed in the [LCR-Net++ code](https://thoth.inrialpes.fr/src/LCR-Net/).
+To get this code, once in the DOPE folder, please clone our modified LCR-Net++ repository:
+```
+git clone https://github.com/naver/lcrnet-v2-improved-ppi.git
+```
+
+Alternatively, you can use a more naive post-processing based on non-maximum suppression by add `--postprocess nms` to the commandlines below, which will result in a slight decrease of performance.
+
+#### Start the capture
+
+Simply run
 
 ```
 python webcam.py --save filename --dim3
