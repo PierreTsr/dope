@@ -30,7 +30,7 @@ Finally, find your CUDA version to choose the best version of pytorch for your s
 
 Then in the repository create a folder `models/` in which you should place the downloaded pretrained models.
 The list of models include:
-* [DOPE_v1_0_0](http://download.europe.naverlabs.com/ComputerVision/DOPE_models/DOPE_v1_0_0.pth.tgz) as used in our ECCV'20 paper
+* [DOPE_v1_0_0](http://download.europe.naverlabs.com/ComputerVision/DOPE_models/DOPE_v1_0_0.pth.tgz) as used the original ECCV'20 paper
 * [DOPErealtime_v1_0_0](http://download.europe.naverlabs.com/ComputerVision/DOPE_models/DOPErealtime_v1_0_0.pth.tgz) which is its real-time version
 
 #### post-processing with a modified version of LCR-Net++
